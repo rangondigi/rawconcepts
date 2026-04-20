@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAW Concepts — Interior & Construction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Helvetica+Neue:wght@200;300;400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --clay:   #522f14;
+    --sand:   #d9c4a8;
+    --cream:  #f5f0e8;
+    --ash:    #1a1a18;
+    --mist:   #e8e2d8;
+    --gold:   #b8935a;
+    --smoke:  #8a8478;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--ash);
+    color: var(--cream);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(184,147,90,0.5);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: transform 0.18s cubic-bezier(0.25,0.46,0.45,0.94),
+                width 0.3s, height 0.3s, border-color 0.3s;
+  }
+  body:hover .cursor-ring { border-color: rgba(184,147,90,0.8); }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 28px 52px;
+    mix-blend-mode: normal;
+    transition: background 0.5s ease, padding 0.4s ease;
+  }
+  nav.scrolled {
+    background: rgba(26,26,24,0.92);
+    backdrop-filter: blur(12px);
+    padding: 18px 52px;
+    border-bottom: 1px solid rgba(82,47,20,0.3);
+  }
+  .nav-logo svg { height: 28px; width: auto; }
+  .nav-logo svg .cls-1 { fill: var(--sand); transition: fill 0.3s; }
+  .nav-logo svg:hover .cls-1 { fill: var(--gold); }
+  .nav-links { display: flex; gap: 44px; list-style: none; }
+  .nav-links a {
+    color: var(--mist);
+    text-decoration: none;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 400;
+    position: relative;
+    transition: color 0.3s;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute; bottom: -4px; left: 0; right: 100%;
+    height: 1px;
+    background: var(--gold);
+    transition: right 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a:hover::after { right: 0; }
+  .nav-cta {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 10px 28px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: background 0.3s, color 0.3s;
+    font-weight: 400;
+  }
+  .nav-cta:hover { background: var(--gold); color: var(--ash); }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    height: 100vh;
+    display: flex; align-items: flex-end;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, #0d0c0a 0%, #1c1610 40%, #2a1f0f 100%);
+  }
+  .hero-img {
+    position: absolute; inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1800&q=85&auto=format');
+    background-size: cover;
+    background-position: center 40%;
+    opacity: 0.35;
+    transform: scale(1.04);
+    transition: transform 12s ease;
+  }
+  .hero-img.loaded { transform: scale(1); }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(26,26,24,0.98) 0%, rgba(26,26,24,0.3) 50%, transparent 100%);
+  }
+  .hero-content {
+    position: relative; z-index: 2;
+    padding: 0 52px 80px;
+    max-width: 1100px;
+  }
+  .hero-eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 1s 0.4s forwards;
+  }
+  .hero-eyebrow span { margin: 0 16px; opacity: 0.4; }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(60px, 8vw, 116px);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin-bottom: 36px;
+    opacity: 0;
+    animation: fadeUp 1s 0.6s forwards;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold);
+    display: block;
+  }
+  .hero-desc {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    line-height: 2;
+    color: var(--smoke);
+    max-width: 420px;
+    margin-bottom: 52px;
+    opacity: 0;
+    animation: fadeUp 1s 0.8s forwards;
+  }
+  .hero-actions {
+    display: flex; align-items: center; gap: 40px;
+    opacity: 0;
+    animation: fadeUp 1s 1s forwards;
+  }
+  .btn-primary {
+    background: var(--clay);
+    border: none;
+    color: var(--cream);
+    padding: 16px 44px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: none;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.3s, transform 0.3s;
+    font-weight: 400;
+  }
+  .btn-primary:hover { background: var(--gold); transform: translateY(-2px); }
+  .hero-link {
+    color: var(--mist);
+    text-decoration: none;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 10px;
+    transition: color 0.3s;
+  }
+  .hero-link::after {
+    content: '→';
+    transition: transform 0.3s;
+  }
+  .hero-link:hover { color: var(--gold); }
+  .hero-link:hover::after { transform: translateX(6px); }
+  .hero-scroll-hint {
+    position: absolute;
+    right: 52px; bottom: 80px;
+    writing-mode: vertical-rl;
+    font-size: 8px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    display: flex; align-items: center; gap: 14px;
+    opacity: 0;
+    animation: fadeUp 1s 1.4s forwards;
+  }
+  .hero-scroll-hint::before {
+    content: '';
+    width: 1px; height: 50px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: lineGrow 1.5s 1.6s forwards;
+    transform-origin: top;
+    transform: scaleY(0);
+  }
+  .hero-year {
+    position: absolute;
+    right: 52px; top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--smoke);
+    opacity: 0;
+    animation: fadeIn 1s 1.2s forwards;
+  }
+
+  /* MARQUEE */
+  .marquee-section {
+    border-top: 1px solid rgba(82,47,20,0.3);
+    border-bottom: 1px solid rgba(82,47,20,0.3);
+    padding: 18px 0;
+    overflow: hidden;
+    background: rgba(82,47,20,0.08);
+  }
+  .marquee-track {
+    display: flex; gap: 0;
+    animation: marquee 28s linear infinite;
+    white-space: nowrap;
+  }
+  .marquee-item {
+    font-size: 9px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    padding: 0 44px;
+    flex-shrink: 0;
+  }
+  .marquee-item .dot {
+    color: var(--gold);
+    margin-right: 44px;
+  }
+
+  /* ABOUT / INTRO */
+  .section-intro {
+    padding: 140px 52px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .section-label {
+    font-size: 8px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .section-label::before {
+    content: '';
+    width: 32px; height: 1px;
+    background: var(--gold);
+  }
+  .intro-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(38px, 4.5vw, 62px);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 32px;
+  }
+  .intro-heading em { font-style: italic; color: var(--gold); }
+  .intro-text {
+    font-size: 12px;
+    line-height: 2.1;
+    color: var(--smoke);
+    letter-spacing: 0.04em;
+    margin-bottom: 20px;
+  }
+  .intro-stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 52px;
+  }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px;
+    font-weight: 300;
+    color: var(--gold);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .stat-label {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    margin-top: 6px;
+  }
+  .intro-image-wrap {
+    position: relative;
+  }
+  .intro-image-wrap::before {
+    content: '';
+    position: absolute;
+    top: -20px; left: -20px;
+    right: 20px; bottom: 20px;
+    border: 1px solid rgba(82,47,20,0.4);
+    z-index: 0;
+  }
+  .intro-image {
+    position: relative; z-index: 1;
+    width: 100%; height: 520px;
+    object-fit: cover;
+    object-position: center;
+    filter: grayscale(20%) contrast(1.05);
+  }
+  .intro-image-caption {
+    position: absolute;
+    bottom: 20px; right: -12px;
+    background: var(--clay);
+    color: var(--cream);
+    font-size: 8px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    z-index: 2;
+  }
+
+  /* SERVICES */
+  .section-services {
+    padding: 120px 52px;
+    background: #141412;
+  }
+  .services-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 80px;
+  }
+  .services-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(40px, 4vw, 58px);
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+  .services-heading em { font-style: italic; color: var(--gold); }
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-left: 1px solid rgba(82,47,20,0.25);
+  }
+  .service-card {
+    padding: 52px 44px;
+    border-right: 1px solid rgba(82,47,20,0.25);
+    border-bottom: 1px solid rgba(82,47,20,0.25);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.4s;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 100%;
+    height: 2px;
+    background: var(--gold);
+    transition: right 0.5s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  .service-card:hover { background: rgba(82,47,20,0.08); }
+  .service-card:hover::before { right: 0; }
+  .service-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    color: var(--clay);
+    letter-spacing: 0.18em;
+    margin-bottom: 28px;
+  }
+  .service-icon {
+    width: 42px; height: 42px;
+    margin-bottom: 28px;
+    opacity: 0.7;
+  }
+  .service-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 18px;
+    letter-spacing: 0.01em;
+  }
+  .service-desc {
+    font-size: 11px;
+    line-height: 1.9;
+    color: var(--smoke);
+    letter-spacing: 0.04em;
+  }
+
+  /* PROJECTS */
+  .section-projects {
+    padding: 120px 52px;
+  }
+  .projects-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 72px;
+  }
+  .projects-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(40px, 4vw, 58px);
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+  .projects-heading em { font-style: italic; color: var(--gold); }
+  .projects-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 2px;
+  }
+  .project-item {
+    position: relative;
+    overflow: hidden;
+    cursor: none;
+  }
+  .project-item.featured { grid-row: span 2; }
+  .project-img {
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94), filter 0.5s;
+    filter: grayscale(15%);
+    display: block;
+  }
+  .project-item.featured .project-img { min-height: 720px; }
+  .project-item:hover .project-img {
+    transform: scale(1.05);
+    filter: grayscale(0%);
+  }
+  .project-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(26,26,24,0.9) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .project-item:hover .project-overlay { opacity: 1; }
+  .project-info {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 36px;
+    transform: translateY(10px);
+    transition: transform 0.4s, opacity 0.4s;
+    opacity: 0;
+  }
+  .project-item:hover .project-info { opacity: 1; transform: translateY(0); }
+  .project-tag {
+    font-size: 8px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .project-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: 0.01em;
+  }
+  .project-loc {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--smoke);
+    margin-top: 6px;
+  }
+  .projects-cta {
+    margin-top: 60px;
+    text-align: center;
+  }
+
+  /* PHILOSOPHY */
+  .section-philosophy {
+    padding: 140px 52px;
+    background: var(--clay);
+    position: relative;
+    overflow: hidden;
+  }
+  .section-philosophy::before {
+    content: 'RAW';
+    position: absolute;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 280px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.04);
+    right: -20px; top: 50%;
+    transform: translateY(-50%);
+    letter-spacing: -0.05em;
+    pointer-events: none;
+  }
+  .philosophy-content {
+    max-width: 780px;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+  }
+  .philosophy-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 3.5vw, 48px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--cream);
+    margin-bottom: 40px;
+    letter-spacing: 0.01em;
+  }
+  .philosophy-quote em { color: var(--sand); }
+  .philosophy-author {
+    font-size: 9px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.5);
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+  }
+  .philosophy-author::before,
+  .philosophy-author::after {
+    content: '';
+    width: 40px; height: 1px;
+    background: rgba(245,240,232,0.3);
+  }
+
+  /* PROCESS */
+  .section-process {
+    padding: 120px 52px;
+    background: #141412;
+  }
+  .process-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-top: 80px;
+    border-top: 1px solid rgba(82,47,20,0.25);
+  }
+  .process-step {
+    padding: 52px 36px 52px 0;
+    border-right: 1px solid rgba(82,47,20,0.2);
+    padding-left: 36px;
+    position: relative;
+  }
+  .process-step:last-child { border-right: none; }
+  .process-arrow {
+    position: absolute;
+    top: 52px; right: -14px;
+    color: var(--clay);
+    font-size: 20px;
+    z-index: 2;
+    display: none;
+  }
+  .step-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 72px;
+    font-weight: 300;
+    color: rgba(82,47,20,0.25);
+    line-height: 1;
+    margin-bottom: 28px;
+    letter-spacing: -0.04em;
+  }
+  .step-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 16px;
+    letter-spacing: 0.01em;
+  }
+  .step-desc {
+    font-size: 11px;
+    line-height: 1.9;
+    color: var(--smoke);
+    letter-spacing: 0.04em;
+  }
+
+  /* CONTACT */
+  .section-contact {
+    padding: 140px 52px;
+  }
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 100px;
+    align-items: start;
+    margin-top: 80px;
+  }
+  .contact-info-block { }
+  .contact-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(38px, 4.5vw, 62px);
+    font-weight: 300;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    margin-bottom: 44px;
+  }
+  .contact-heading em { font-style: italic; color: var(--gold); }
+  .contact-detail {
+    display: flex; flex-direction: column;
+    margin-bottom: 36px;
+  }
+  .contact-detail-label {
+    font-size: 8px;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .contact-detail-val {
+    font-size: 13px;
+    color: var(--mist);
+    line-height: 1.7;
+    letter-spacing: 0.03em;
+  }
+  .contact-detail-val a {
+    color: var(--mist);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .contact-detail-val a:hover { color: var(--gold); }
+  .contact-form { }
+  .form-field {
+    margin-bottom: 28px;
+  }
+  .form-field label {
+    display: block;
+    font-size: 8px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    margin-bottom: 10px;
+  }
+  .form-field input,
+  .form-field textarea,
+  .form-field select {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(138,132,120,0.3);
+    color: var(--cream);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    padding: 12px 0;
+    outline: none;
+    transition: border-color 0.3s;
+    cursor: none;
+    appearance: none;
+  }
+  .form-field select { cursor: none; }
+  .form-field input:focus,
+  .form-field textarea:focus,
+  .form-field select:focus {
+    border-color: var(--gold);
+  }
+  .form-field textarea { resize: none; height: 100px; }
+  .form-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 28px;
+  }
+  .form-submit {
+    margin-top: 12px;
+    width: 100%;
+    background: var(--clay);
+    border: none;
+    color: var(--cream);
+    padding: 18px 44px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: background 0.3s;
+    font-weight: 400;
+  }
+  .form-submit:hover { background: var(--gold); }
+
+  /* MAP SECTION */
+  .section-map {
+    height: 400px;
+    position: relative;
+    overflow: hidden;
+  }
+  .map-overlay-text {
+    position: absolute; inset: 0;
+    background: rgba(26,26,24,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .map-badge {
+    background: var(--clay);
+    color: var(--cream);
+    padding: 20px 40px;
+    text-align: center;
+  }
+  .map-badge-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 400;
+    margin-bottom: 6px;
+  }
+  .map-badge-addr {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: var(--sand);
+  }
+  iframe.map-frame {
+    width: 100%; height: 100%;
+    border: none;
+    filter: grayscale(80%) contrast(1.1);
+  }
+
+  /* FOOTER */
+  footer {
+    background: #0d0c0a;
+    padding: 72px 52px 40px;
+    border-top: 1px solid rgba(82,47,20,0.25);
+  }
+  .footer-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 60px;
+  }
+  .footer-logo svg { height: 24px; width: auto; }
+  .footer-logo svg .cls-1 { fill: rgba(217,196,168,0.5); }
+  .footer-tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--smoke);
+    margin-top: 12px;
+    letter-spacing: 0.04em;
+  }
+  .footer-links {
+    display: flex; gap: 80px;
+  }
+  .footer-col-title {
+    font-size: 8px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-col ul a {
+    color: var(--smoke);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    transition: color 0.3s;
+  }
+  .footer-col ul a:hover { color: var(--cream); }
+  .footer-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 32px;
+    border-top: 1px solid rgba(82,47,20,0.15);
+  }
+  .footer-copy {
+    font-size: 9px;
+    color: rgba(138,132,120,0.5);
+    letter-spacing: 0.12em;
+  }
+  .footer-social { display: flex; gap: 24px; }
+  .footer-social a {
+    color: var(--smoke);
+    text-decoration: none;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .footer-social a:hover { color: var(--gold); }
+
+  /* KEYFRAMES */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes lineGrow {
+    to { transform: scaleY(1); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.9s cubic-bezier(0.25,0.46,0.45,0.94), transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.12s; }
+  .reveal-delay-2 { transition-delay: 0.24s; }
+  .reveal-delay-3 { transition-delay: 0.36s; }
+  .reveal-delay-4 { transition-delay: 0.48s; }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo">
+    <a href="#">
+      <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 564.46 184.09"><defs><style>.cls-1{fill:#d9c4a8;transition:fill 0.3s;}</style></defs><path class="cls-1" d="M113.81,62.53q0-16.41-4.88-26.83T97.11,19.4a38.09,38.09,0,0,0-14.49-8A50.32,50.32,0,0,0,69.7,9.35a129.86,129.86,0,0,1,13.4-.74,94.42,94.42,0,0,1,25.35,3.31,64.1,64.1,0,0,1,21,9.93,48.83,48.83,0,0,1,14.38,16.79q5.36,10.17,5.36,23.89a49.08,49.08,0,0,1-3.78,19.74A48,48,0,0,1,135,97.46a55.67,55.67,0,0,1-15.35,10.66,88.52,88.52,0,0,1-18.53,6.37,43.94,43.94,0,0,1,22.79,6.13,39.85,39.85,0,0,1,15.72,16.91l21.2,42.65a24.72,24.72,0,0,0,5.61,7.23,29,29,0,0,0,8.29,5.27H151.59a28.89,28.89,0,0,1-26.08-16.42L107,137.78a41.63,41.63,0,0,0-14.38-15.56Q83.1,116,69.7,115.47a103.37,103.37,0,0,0,12.55-3.42,45.88,45.88,0,0,0,14.5-8.22,47.07,47.07,0,0,0,12.06-15.68Q113.82,78.22,113.81,62.53ZM54.1,8.61V180.18a14,14,0,0,0,1.95,7.23,14.42,14.42,0,0,0,5.36,5.27H12.92a14.42,14.42,0,0,0,5.36-5.27,14,14,0,0,0,1.95-7.23V25.77A40.34,40.34,0,0,0,19,14.62q-1.23-4-6.09-6Z" transform="translate(-12.92 -8.59)"/><path class="cls-1" d="M252.29,46.8l17.2-38.21h3.59l71,162.7a78.46,78.46,0,0,0,7.53,13.82,21.1,21.1,0,0,0,10.63,7.57H330.67a21.8,21.8,0,0,1-12.19-3.6,21.4,21.4,0,0,1-8.12-9.86Zm-83.4,145.88a25.45,25.45,0,0,0,11.71-7,58.3,58.3,0,0,0,8.6-10.81l37.52-67.54q-3.58,14.43-6,27.88Q219.8,141,219,147t-1.2,11.77a103.39,103.39,0,0,0-.11,10.94,45.62,45.62,0,0,0,1.19,9,30.66,30.66,0,0,0,3.35,8.41,20.14,20.14,0,0,0,4.54,5.53Z" transform="translate(-12.92 -8.59)"/><path class="cls-1" d="M540.57,94.15q3.57-14.41,6-27.87,1-5.78,1.79-11.77c.57-4,1-7.93,1.2-11.78a100.65,100.65,0,0,0,.12-10.93,47.38,47.38,0,0,0-1.19-9,44.5,44.5,0,0,0-3-8.53,11.63,11.63,0,0,0-4.89-5.4h21.74a14.41,14.41,0,0,1,7.64,2,15.08,15.08,0,0,1,5.25,5.28,16,16,0,0,1,2.16,7.21,14.06,14.06,0,0,1-1.92,7.81ZM436.64,8.86a22.32,22.32,0,0,1,12.3,3.6,21.2,21.2,0,0,1,8.24,9.85L515,154.46l-17.2,38.2h-3.58l-71-162.42a78.37,78.37,0,0,0-7.52-13.81,21.18,21.18,0,0,0-10.63-7.57Zm-125.43,0h31.54a21.76,21.76,0,0,1,12.18,3.6,21.45,21.45,0,0,1,8.13,9.85l57.81,132.15-17,38.2h-3.58l-71-162.42a79,79,0,0,0-7.52-13.81A21.17,21.17,0,0,0,311.21,8.86Z" transform="translate(-12.92 -8.59)"/><circle class="cls-1" cx="547.07" cy="166.71" r="17.32"/></svg>
+    </a>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Start a Project</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-img" id="heroBg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">RAW Concepts<span>·</span>Est. 2021<span>·</span>Dhaka, Bangladesh</p>
+    <h1 class="hero-title">
+      Architecture<br>
+      <em>Reimagined.</em>
+    </h1>
+    <p class="hero-desc">We craft spaces that transcend the ordinary — where interior design and construction converge into something wholly unexpected.</p>
+    <div class="hero-actions">
+      <a href="#projects" class="btn-primary">View Portfolio</a>
+      <a href="#about" class="hero-link">Our Philosophy</a>
+    </div>
+  </div>
+  <div class="hero-scroll-hint">Scroll</div>
+  <div class="hero-year">2021 — Present</div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track">
+    <span class="marquee-item"><span class="dot">◆</span>Interior Design</span>
+    <span class="marquee-item"><span class="dot">◆</span>Construction</span>
+    <span class="marquee-item"><span class="dot">◆</span>Space Planning</span>
+    <span class="marquee-item"><span class="dot">◆</span>Architecture</span>
+    <span class="marquee-item"><span class="dot">◆</span>Renovation</span>
+    <span class="marquee-item"><span class="dot">◆</span>Commercial Fit-Out</span>
+    <span class="marquee-item"><span class="dot">◆</span>Residential Design</span>
+    <span class="marquee-item"><span class="dot">◆</span>Project Management</span>
+    <span class="marquee-item"><span class="dot">◆</span>Interior Design</span>
+    <span class="marquee-item"><span class="dot">◆</span>Construction</span>
+    <span class="marquee-item"><span class="dot">◆</span>Space Planning</span>
+    <span class="marquee-item"><span class="dot">◆</span>Architecture</span>
+    <span class="marquee-item"><span class="dot">◆</span>Renovation</span>
+    <span class="marquee-item"><span class="dot">◆</span>Commercial Fit-Out</span>
+    <span class="marquee-item"><span class="dot">◆</span>Residential Design</span>
+    <span class="marquee-item"><span class="dot">◆</span>Project Management</span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="section-intro" id="about">
+  <div>
+    <p class="section-label reveal">Studio</p>
+    <h2 class="intro-heading reveal reveal-delay-1">
+      Where raw form<br>meets <em>refined vision</em>
+    </h2>
+    <p class="intro-text reveal reveal-delay-2">Founded in 2021, RAW Concepts emerged from a belief that great spaces are not merely built — they are carefully conceived, meticulously planned, and authentically realized. Based in the heart of Dhaka, we operate at the intersection of interior design and construction.</p>
+    <p class="intro-text reveal reveal-delay-2">Every project is a dialogue between client vision and material reality. We listen, translate, and build with integrity.</p>
+    <div class="intro-stats reveal reveal-delay-3">
+      <div>
+        <div class="stat-num" data-target="80">0</div>
+        <div class="stat-label">Projects Completed</div>
+      </div>
+      <div>
+        <div class="stat-num" data-target="4">0</div>
+        <div class="stat-label">Years of Excellence</div>
+      </div>
+      <div>
+        <div class="stat-num" data-target="100">0</div>
+        <div class="stat-label">Happy Clients</div>
+      </div>
+      <div>
+        <div class="stat-num" data-target="12">0</div>
+        <div class="stat-label">Core Specialists</div>
+      </div>
+    </div>
+  </div>
+  <div class="intro-image-wrap reveal reveal-delay-2">
+    <img class="intro-image" src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=900&q=85&auto=format" alt="Interior design showcase">
+    <div class="intro-image-caption">Dhaka, Bangladesh</div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="section-services" id="services">
+  <div class="services-header">
+    <div>
+      <p class="section-label reveal">What We Do</p>
+      <h2 class="services-heading reveal reveal-delay-1">
+        A full spectrum<br><em>of craft</em>
+      </h2>
+    </div>
+    <a href="#contact" class="btn-primary reveal">Enquire Now</a>
+  </div>
+  <div class="services-grid">
+    <div class="service-card reveal">
+      <div class="service-num">01</div>
+      <svg class="service-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="14" width="34" height="24" stroke="#b8935a" stroke-width="1.2"/>
+        <path d="M4 14L21 4L38 14" stroke="#b8935a" stroke-width="1.2"/>
+        <line x1="14" y1="38" x2="14" y2="24" stroke="#b8935a" stroke-width="1.2"/>
+        <rect x="17" y="24" width="8" height="14" stroke="#b8935a" stroke-width="1.2"/>
+      </svg>
+      <h3 class="service-title">Interior Design</h3>
+      <p class="service-desc">Bespoke interior solutions for residential and commercial spaces. From concept to completion, we curate environments that reflect identity and purpose.</p>
+    </div>
+    <div class="service-card reveal reveal-delay-1">
+      <div class="service-num">02</div>
+      <svg class="service-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="6" width="30" height="30" stroke="#b8935a" stroke-width="1.2"/>
+        <line x1="6" y1="21" x2="36" y2="21" stroke="#b8935a" stroke-width="1.2"/>
+        <line x1="21" y1="6" x2="21" y2="36" stroke="#b8935a" stroke-width="1.2"/>
+        <circle cx="21" cy="21" r="4" stroke="#b8935a" stroke-width="1.2"/>
+      </svg>
+      <h3 class="service-title">Space Planning</h3>
+      <p class="service-desc">Intelligent spatial layouts that maximize functionality while preserving aesthetic coherence. Every square foot is thoughtfully considered.</p>
+    </div>
+    <div class="service-card reveal reveal-delay-2">
+      <div class="service-num">03</div>
+      <svg class="service-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 34L8 16L21 8L34 16V34H8Z" stroke="#b8935a" stroke-width="1.2"/>
+        <path d="M15 34V26H27V34" stroke="#b8935a" stroke-width="1.2"/>
+        <path d="M16 20H26" stroke="#b8935a" stroke-width="1.2"/>
+      </svg>
+      <h3 class="service-title">Construction</h3>
+      <p class="service-desc">Full-scope construction and build-out services backed by skilled craftsmanship, precision engineering, and uncompromising quality control.</p>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-num">04</div>
+      <svg class="service-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="21" cy="21" r="14" stroke="#b8935a" stroke-width="1.2"/>
+        <path d="M21 7V21L29 29" stroke="#b8935a" stroke-width="1.2"/>
+        <line x1="7" y1="21" x2="35" y2="21" stroke="#b8935a" stroke-width="1.2" opacity="0.4"/>
+      </svg>
+      <h3 class="service-title">Project Management</h3>
+      <p class="service-desc">End-to-end project oversight ensuring timelines, budgets, and quality standards are consistently met — with full transparency throughout.</p>
+    </div>
+    <div class="service-card reveal reveal-delay-1">
+      <div class="service-num">05</div>
+      <svg class="service-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="10" width="34" height="22" stroke="#b8935a" stroke-width="1.2"/>
+        <path d="M12 10V32" stroke="#b8935a" stroke-width="1.2" opacity="0.5"/>
+        <path d="M30 10V32" stroke="#b8935a" stroke-width="1.2" opacity="0.5"/>
+        <line x1="4" y1="21" x2="38" y2="21" stroke="#b8935a" stroke-width="1.2" opacity="0.5"/>
+        <circle cx="21" cy="37" r="2" fill="#b8935a"/>
+      </svg>
+      <h3 class="service-title">Commercial Fit-Out</h3>
+      <p class="service-desc">Turnkey commercial interiors for offices, retail spaces, restaurants, and hospitality venues. Brand identity expressed through built form.</p>
+    </div>
+    <div class="service-card reveal reveal-delay-2">
+      <div class="service-num">06</div>
+      <svg class="service-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 34V18L21 8L34 18V34H8Z" stroke="#b8935a" stroke-width="1.2"/>
+        <circle cx="21" cy="22" r="5" stroke="#b8935a" stroke-width="1.2"/>
+        <line x1="21" y1="8" x2="21" y2="17" stroke="#b8935a" stroke-width="1.2"/>
+      </svg>
+      <h3 class="service-title">Renovation</h3>
+      <p class="service-desc">Thoughtful transformation of existing spaces — breathing new life into structures while honoring their original character and context.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section class="section-projects" id="projects">
+  <div class="projects-header">
+    <div>
+      <p class="section-label reveal">Selected Work</p>
+      <h2 class="projects-heading reveal reveal-delay-1">
+        Spaces that<br><em>tell stories</em>
+      </h2>
+    </div>
+    <a href="#contact" class="hero-link reveal">All Projects →</a>
+  </div>
+  <div class="projects-grid">
+    <div class="project-item featured reveal">
+      <img class="project-img" src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=900&q=85&auto=format" alt="Living space">
+      <div class="project-overlay"></div>
+      <div class="project-info">
+        <div class="project-tag">Residential · 2024</div>
+        <div class="project-name">The Gulshan Residence</div>
+        <div class="project-loc">Gulshan, Dhaka</div>
+      </div>
+    </div>
+    <div class="project-item reveal reveal-delay-1">
+      <img class="project-img" src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=85&auto=format" alt="Office interior">
+      <div class="project-overlay"></div>
+      <div class="project-info">
+        <div class="project-tag">Commercial · 2023</div>
+        <div class="project-name">Banani Corporate Hub</div>
+        <div class="project-loc">Banani, Dhaka</div>
+      </div>
+    </div>
+    <div class="project-item reveal reveal-delay-2">
+      <img class="project-img" src="https://images.unsplash.com/photo-1544986581-efac5e5d6ca9?w=800&q=85&auto=format" alt="Restaurant">
+      <div class="project-overlay"></div>
+      <div class="project-info">
+        <div class="project-tag">Hospitality · 2024</div>
+        <div class="project-name">Uttara Dining Concept</div>
+        <div class="project-loc">Uttara, Dhaka</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHILOSOPHY -->
+<section class="section-philosophy">
+  <div class="philosophy-content">
+    <p class="section-label reveal" style="justify-content:center;">Our Belief</p>
+    <p class="philosophy-quote reveal reveal-delay-1">
+      "Great architecture is not about<br><em>the structure — it is about the silence</em><br>between the walls."
+    </p>
+    <div class="philosophy-author reveal reveal-delay-2">RAW Concepts Studio</div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section-process">
+  <p class="section-label reveal">How We Work</p>
+  <h2 class="services-heading reveal reveal-delay-1">The RAW <em>process</em></h2>
+  <div class="process-grid">
+    <div class="process-step reveal">
+      <div class="step-num">01</div>
+      <h3 class="step-title">Discovery</h3>
+      <p class="step-desc">We begin by listening deeply. Understanding your vision, lifestyle, and aspirations forms the foundation of every great project we undertake.</p>
+    </div>
+    <div class="process-step reveal reveal-delay-1">
+      <div class="step-num">02</div>
+      <h3 class="step-title">Concept Design</h3>
+      <p class="step-desc">Our designers translate insight into visual language — mood boards, spatial concepts, and material palettes that define the project's soul.</p>
+    </div>
+    <div class="process-step reveal reveal-delay-2">
+      <div class="step-num">03</div>
+      <h3 class="step-title">Development</h3>
+      <p class="step-desc">Technical drawings, 3D visualizations, and construction documentation are developed to perfection before a single wall is built.</p>
+    </div>
+    <div class="process-step reveal reveal-delay-3">
+      <div class="step-num">04</div>
+      <h3 class="step-title">Delivery</h3>
+      <p class="step-desc">Skilled construction teams bring the design to life with precision and care. We oversee every detail until the final handover.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section-contact" id="contact">
+  <p class="section-label reveal">Get in Touch</p>
+  <div class="contact-grid">
+    <div class="contact-info-block">
+      <h2 class="contact-heading reveal reveal-delay-1">
+        Let's build<br>something <em>extraordinary</em>
+      </h2>
+      <div class="contact-detail reveal reveal-delay-2">
+        <span class="contact-detail-label">Studio Address</span>
+        <span class="contact-detail-val">Plot 32, Road 12, Sector 10<br>Uttara, Dhaka, Bangladesh</span>
+      </div>
+      <div class="contact-detail reveal reveal-delay-2">
+        <span class="contact-detail-label">Phone</span>
+        <span class="contact-detail-val"><a href="tel:+8801515644570">+88 01515 644570</a></span>
+      </div>
+      <div class="contact-detail reveal reveal-delay-3">
+        <span class="contact-detail-label">Email</span>
+        <span class="contact-detail-val"><a href="mailto:rawconcepts07@gmail.com">rawconcepts07@gmail.com</a></span>
+      </div>
+      <div class="contact-detail reveal reveal-delay-3">
+        <span class="contact-detail-label">Studio Hours</span>
+        <span class="contact-detail-val">Saturday – Thursday<br>10:00 AM – 7:00 PM</span>
+      </div>
+    </div>
+    <div class="contact-form reveal reveal-delay-2">
+      <div class="form-row">
+        <div class="form-field">
+          <label>First Name</label>
+          <input type="text" placeholder="Rafiq">
+        </div>
+        <div class="form-field">
+          <label>Last Name</label>
+          <input type="text" placeholder="Ahmed">
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Email Address</label>
+        <input type="email" placeholder="your@email.com">
+      </div>
+      <div class="form-field">
+        <label>Phone</label>
+        <input type="tel" placeholder="+88 01X XX XXXXXX">
+      </div>
+      <div class="form-field">
+        <label>Project Type</label>
+        <select>
+          <option value="" disabled selected>Select service</option>
+          <option>Residential Interior Design</option>
+          <option>Commercial Interior Design</option>
+          <option>Construction</option>
+          <option>Renovation</option>
+          <option>Commercial Fit-Out</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Tell Us About Your Project</label>
+        <textarea placeholder="Briefly describe your project, timeline, and budget range..."></textarea>
+      </div>
+      <button class="form-submit">Send Enquiry</button>
+    </div>
+  </div>
+</section>
+
+<!-- MAP -->
+<div class="section-map">
+  <iframe class="map-frame" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3648.2985!2d90.3944!3d23.8759!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755c5b9a5d59a31%3A0x0!2sUttara%20Sector%2010%2C%20Dhaka!5e0!3m2!1sen!2sbd!4v1" allowfullscreen="" loading="lazy"></iframe>
+  <div class="map-overlay-text">
+    <div class="map-badge">
+      <div class="map-badge-title">RAW Concepts Studio</div>
+      <div class="map-badge-addr">Plot 32, Road 12, Sector 10, Uttara, Dhaka</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="footer-logo">
+        <svg id="Layer_1f" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 564.46 184.09"><path style="fill:rgba(217,196,168,0.5)" d="M113.81,62.53q0-16.41-4.88-26.83T97.11,19.4a38.09,38.09,0,0,0-14.49-8A50.32,50.32,0,0,0,69.7,9.35a129.86,129.86,0,0,1,13.4-.74,94.42,94.42,0,0,1,25.35,3.31,64.1,64.1,0,0,1,21,9.93,48.83,48.83,0,0,1,14.38,16.79q5.36,10.17,5.36,23.89a49.08,49.08,0,0,1-3.78,19.74A48,48,0,0,1,135,97.46a55.67,55.67,0,0,1-15.35,10.66,88.52,88.52,0,0,1-18.53,6.37,43.94,43.94,0,0,1,22.79,6.13,39.85,39.85,0,0,1,15.72,16.91l21.2,42.65a24.72,24.72,0,0,0,5.61,7.23,29,29,0,0,0,8.29,5.27H151.59a28.89,28.89,0,0,1-26.08-16.42L107,137.78a41.63,41.63,0,0,0-14.38-15.56Q83.1,116,69.7,115.47a103.37,103.37,0,0,0,12.55-3.42,45.88,45.88,0,0,0,14.5-8.22,47.07,47.07,0,0,0,12.06-15.68Q113.82,78.22,113.81,62.53ZM54.1,8.61V180.18a14,14,0,0,0,1.95,7.23,14.42,14.42,0,0,0,5.36,5.27H12.92a14.42,14.42,0,0,0,5.36-5.27,14,14,0,0,0,1.95-7.23V25.77A40.34,40.34,0,0,0,19,14.62q-1.23-4-6.09-6Z" transform="translate(-12.92 -8.59)"/><path style="fill:rgba(217,196,168,0.5)" d="M252.29,46.8l17.2-38.21h3.59l71,162.7a78.46,78.46,0,0,0,7.53,13.82,21.1,21.1,0,0,0,10.63,7.57H330.67a21.8,21.8,0,0,1-12.19-3.6,21.4,21.4,0,0,1-8.12-9.86Zm-83.4,145.88a25.45,25.45,0,0,0,11.71-7,58.3,58.3,0,0,0,8.6-10.81l37.52-67.54q-3.58,14.43-6,27.88Q219.8,141,219,147t-1.2,11.77a103.39,103.39,0,0,0-.11,10.94,45.62,45.62,0,0,0,1.19,9,30.66,30.66,0,0,0,3.35,8.41,20.14,20.14,0,0,0,4.54,5.53Z" transform="translate(-12.92 -8.59)"/><path style="fill:rgba(217,196,168,0.5)" d="M540.57,94.15q3.57-14.41,6-27.87,1-5.78,1.79-11.77c.57-4,1-7.93,1.2-11.78a100.65,100.65,0,0,0,.12-10.93,47.38,47.38,0,0,0-1.19-9,44.5,44.5,0,0,0-3-8.53,11.63,11.63,0,0,0-4.89-5.4h21.74a14.41,14.41,0,0,1,7.64,2,15.08,15.08,0,0,1,5.25,5.28,16,16,0,0,1,2.16,7.21,14.06,14.06,0,0,1-1.92,7.81ZM436.64,8.86a22.32,22.32,0,0,1,12.3,3.6,21.2,21.2,0,0,1,8.24,9.85L515,154.46l-17.2,38.2h-3.58l-71-162.42a78.37,78.37,0,0,0-7.52-13.81,21.18,21.18,0,0,0-10.63-7.57Zm-125.43,0h31.54a21.76,21.76,0,0,1,12.18,3.6,21.45,21.45,0,0,1,8.13,9.85l57.81,132.15-17,38.2h-3.58l-71-162.42a79,79,0,0,0-7.52-13.81A21.17,21.17,0,0,0,311.21,8.86Z" transform="translate(-12.92 -8.59)"/><circle style="fill:rgba(217,196,168,0.5)" cx="547.07" cy="166.71" r="17.32"/></svg>
+      </div>
+      <p class="footer-tagline">Interior & Construction — Dhaka</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <div class="footer-col-title">Studio</div>
+        <ul>
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#projects">Projects</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Services</div>
+        <ul>
+          <li><a href="#services">Interior Design</a></li>
+          <li><a href="#services">Construction</a></li>
+          <li><a href="#services">Renovation</a></li>
+          <li><a href="#services">Fit-Out</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Contact</div>
+        <ul>
+          <li><a href="tel:+8801515644570">+88 01515 644570</a></li>
+          <li><a href="mailto:rawconcepts07@gmail.com">rawconcepts07@gmail.com</a></li>
+          <li><a href="#">Uttara, Dhaka</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">© 2025 RAW Concepts. All rights reserved.</p>
+    <div class="footer-social">
+      <a href="#">Facebook</a>
+      <a href="#">Instagram</a>
+      <a href="#">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.transform = `translate(${mx - 4}px, ${my - 4}px)`;
+  });
+  function animateRing() {
+    rx += (mx - rx - 18) * 0.15;
+    ry += (my - ry - 18) * 0.15;
+    ring.style.transform = `translate(${rx}px, ${ry}px)`;
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+  document.querySelectorAll('a, button, input, textarea, select').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      ring.style.width = '54px';
+      ring.style.height = '54px';
+      ring.style.borderColor = 'rgba(184,147,90,1)';
+    });
+    el.addEventListener('mouseleave', () => {
+      ring.style.width = '36px';
+      ring.style.height = '36px';
+      ring.style.borderColor = 'rgba(184,147,90,0.5)';
+    });
+  });
+
+  // Navbar scroll
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // Hero image parallax
+  const heroBg = document.getElementById('heroBg');
+  window.addEventListener('load', () => { heroBg.classList.add('loaded'); });
+  window.addEventListener('scroll', () => {
+    heroBg.style.transform = `translateY(${window.scrollY * 0.25}px) scale(1)`;
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Counter animation
+  function animateCounter(el, target, suffix = '') {
+    let current = 0;
+    const duration = 1800;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = Math.floor(current) + suffix;
+      if (current >= target) clearInterval(timer);
+    }, 16);
+  }
+  const statObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const target = parseInt(e.target.dataset.target);
+        const suffix = e.target.dataset.suffix || '';
+        animateCounter(e.target, target, suffix);
+        statObserver.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('[data-target]').forEach(el => statObserver.observe(el));
+
+  // Form submit feedback
+  document.querySelector('.form-submit').addEventListener('click', function() {
+    this.textContent = 'Message Sent ✓';
+    this.style.background = 'var(--clay)';
+    setTimeout(() => { this.textContent = 'Send Enquiry'; }, 3000);
+  });
+</script>
+</body>
+</html>
